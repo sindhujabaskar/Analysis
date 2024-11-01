@@ -1,24 +1,29 @@
 # purpose: unpickling dlc output for pupil analysis 
-#%%
-#get libraries
+#%% GET LIBRARIES
+
 import pandas as pd
 import numpy as np
 import math
 import statistics as st
 import pathlib
+import matplotlib.pyplot as plt
 
-#%% Set file directories
 
-DIRECTORY = (r'E:\pupil_test-SB-2024-07-29\videos')
-DATA_PATH = (r'E:\pupil_test-SB-2024-07-29\videos\240701_sb7_grat_6_DLCDLC_Resnet50_pupil_testJul29shuffle2_snapshot_200_full.pickle')
+#%% SET FILE DIRECTORIES
+
+DIRECTORY = (r'/Desktop/pupil_test-SB-2024-07-29/videos')
+DATA_PATH = (r'/Users/sindhubaskar/Desktop/pupil_test-SB-2024-07-29/videos/240701_sb7_grat_6_DLCDLC_Resnet50_pupil_testJul29shuffle2_snapshot_200_full.pickle')
 SAVE_CSV = (r'D:\Resources\DeepLabCut\Pupil\pupil_test-SB-2024-07-29\analysis')
 
+
 #%% GET FILE LIST
-import pathlib
+
+# 241022 Note- this does not currently list all full.pickle files SB
 
 data_file_list = []
 for file in pathlib.Path(DIRECTORY).glob('*full.pickle'):
     data_file_list.append(file)
+
 
 #%% LOAD FUNCTIONS
 
@@ -29,38 +34,90 @@ def load_df_from_file(path=DATA_PATH):
     new_df = pd.DataFrame(data = unpickled_data)
     return new_df
 
-def coordinates_array(new_df: pd.DataFrame):
-    """ return row 8 from all columns of a dataframe 'new_df' """
-    return new_df.iloc[8, :]
+#def coordinates_array(new_df: pd.DataFrame):
+ #   """ return row 8 from all columns of a dataframe 'new_df' """
+  #  return new_df.iloc[8, :]
 
-def euclidean_distance(point1, point2):
+def euclidean_distance(coord1, coord2):
     """ Calculate the Euclidean distance between two points """
-    return math.dist(point1, point2)
+    return math.dist(coord1, coord2)
 
 #%% LOAD DATA
 # Note, this script will look for the ['coordinates'] row in the DataFrame
 
-raw_dataframe = load_df_from_file(DATA_PATH) # new_df = whatever load_file 'returns'
+raw_dataframe = load_df_from_file(DATA_PATH) # new_df = whatever load_df_from_file 'returns'
 print(raw_dataframe)
 
-#%% SLICE FRAME COORDINATES INTO A LIST OF ARRAYS
 
-# Initialize an empty list to store the coordinate arrays
+#%% SLICE FRAME COORDINATES AND CONFIDENCE INTO LIST OF ARRAYS
+
+# Initialize an empty list to store the coordinate and confidence arrays
 frame_coordinates_array = []
+frame_confidence_array = []
 
 # Iterate through each column in the DataFrame
 for frame in raw_dataframe.columns:
     # Extract the 'coordinates' row from the current column
     coordinates_list = raw_dataframe.at['coordinates', frame]
     
+    # Extract the 'confidence' row from the current column
+    confidence_list = raw_dataframe.at['confidence', frame]
+    
     # Convert the extracted data to a numpy array
     coordinates_array = np.array(coordinates_list)
+    confidence_array = np.array(confidence_list)
     
     # Append the numpy array to the list of coordinate arrays
     frame_coordinates_array.append(coordinates_array)
+    
+    # Append the numpy array to the list of coordinate arrays
+    frame_confidence_array.append(confidence_array)
 
-# Now coordinate_arrays contains the list of arrays for each frame
+# Now frame_''_array contains the list of arrays for each frame
 print(frame_coordinates_array)
+print(frame_confidence_array)
+
+
+#%% FILTER COORDINATES BASED ON CONFIDENCE 
+
+def confidence_filter_coordinates(frame_coordinates_array, frame_confidence_array, threshold):
+    
+    #Initialize an empty list to store the threshold-labeled list of coordinates
+    thresholded_frames = []
+    
+    #Zip the coordinate and its confidence into a pair, skipping the first item in the list (null metadata)
+    for coordinates, confidence in zip(frame_coordinates_array[1:], frame_confidence_array[1:]): 
+        
+        # Initialize lists to store coords, conf, and label for current frame
+        frame_coords = []
+        frame_conf = []
+        frame_label = []
+        
+        # Per frame, iterate through zip pairs 
+        for i in range(8):
+            
+            # Get coordinate and confidence value
+            coord = coordinates[0,i,0,:]
+            conf = confidence[i,0,0]
+            
+            # Assign True/False boolean label to each coordinate based on confidence criteria
+            label: bool = False
+            if conf >= threshold:
+                label = True 
+                
+            # Append the filtered frame values for coords, conf, and label
+            frame_coords.append(coord)
+            frame_conf.append(conf)
+            frame_label.append(label)
+            
+        # Append the list of filtered coordinates with bool label
+        thresholded_frames.append([frame_coords, frame_conf, frame_label])
+                
+    return thresholded_frames
+
+# Cast list of thresholded coordinates to a DataFrame
+thresholded_frames = confidence_filter_coordinates(frame_coordinates_array, frame_confidence_array, 0.90)
+
 
 #%% AVERAGE DIAMETER FOR EACH FRAME
 
@@ -87,14 +144,54 @@ for coordinates in frame_coordinates_array[1:]: # skip the first item in the lis
     
     # Append the mean diameter to the list of diameters for all frames
     pupil_diameters.append(mean_diameter)
+    
+# Now diameters contains the list of distances for each frame
+print(pupil_diameters)
+    
+#%% DEV SB: AVG DIAMETER USING THRESHOLDED_FRAMES
 
-#%%
+# Initialize an empty list to store the averaged diameter for each frame
+pupil_diameters = []
+
+# Iterate through list of coordinates, confidence, and label of each frame
+for coordinates, confidence, include in thresholded_frames:
+    
+    # Initialize an empty list to store the diameters for the current frame
+    frame_diameters = []
+
+    #  in the current frame, iterate through each pair of coordinates
+    for i in range(0, 7, 2): # 0, 2, 4, 6 results in (x_1, y_1) paired with (x_2, y_2), (x_3, y_3) and (x_4, y_4), etc.
+        
+        for label in include:
+            if label[i] and label[i+1]:
+                 # Calculate the Euclidean distance between the two coordinate points using our custom euclidean_distance function
+                 diameter = euclidean_distance(coordinates[i], coordinates[i+1])
+                 
+             else:
+                 pass           
+    
+        if label[i] and label[i+1]:
+            
+            # Calculate the Euclidean distance between the two coordinate points using our custom euclidean_distance function
+            diameter = euclidean_distance(coordinates[i], coordinates[i+1])
+            
+      
+            
+        # Append the calculated diameter to the list of diameters for the current frame
+        frame_diameters.append(diameter)
+
+        # Calculate the mean diameter for the current frame
+        mean_diameter = st.mean(frame_diameters)
+
+    
+    # Append the mean diameter to the list of diameters for all frames
+    pupil_diameters.append(mean_diameter)
+    
 # Now diameters contains the list of distances for each frame
 print(pupil_diameters)
 
-#%% PLT PUPIL DIAMETERS
 
-import matplotlib.pyplot as plt
+#%% PLT PUPIL DIAMETERS
 
 # Set the DPI for the plot
 plt.figure(dpi=300)
@@ -124,7 +221,7 @@ def plot_frame_coordinates(raw_dataframe: pd.DataFrame, frame_number: int):
     plt.show()
 
 
-#%%
+#%% TODO
 
 #TODO Linear interpolation or qubic spline interpolation
 #TODO Use confidence intervals to determine blinks
