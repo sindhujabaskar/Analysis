@@ -125,28 +125,32 @@ thresholded_frames = confidence_filter_coordinates(frame_coordinates_array, fram
 pupil_diameters = []
 
 # Iterate through each array of coordinates of each frame
-for coordinates in frame_coordinates_array[1:]: # skip the first item in the list (null metadata)
+for frame in thresholded_frames: # skip the first item in the list (null metadata)
     # Initialize an empty list to store the diameters for the current frame
     frame_diameters = []
-
     #  in the current frame Iterate through each pair of coordinates
     for i in range(0, 7, 2): # 0, 2, 4, 6 results in (x_1, y_1) paired with (x_2, y_2), (x_3, y_3) and (x_4, y_4), etc.
         
         # Calculate the Euclidean distance between the two coordinate points using our custom euclidean_distance function
-        diameter = euclidean_distance(coordinates[0,i,0,:], coordinates[0,i+1,0,:])
+        diameter = euclidean_distance(frame[0][i], frame[0][i+1])
         
+        if frame[2][i] and frame[2][i+1]:
+            #print(frame[2][i], frame[2][i+1])
         # Append the calculated diameter to the list of diameters for the current frame
-        frame_diameters.append(diameter)
-    
-    # Calculate the mean diameter for the current frame
-    mean_diameter = st.mean(frame_diameters)
+            frame_diameters.append(diameter)
+
+    if len(frame_diameters) < 1:
+        print(frame)
+    else:
+        # Calculate the mean diameter for the current frame
+        mean_diameter = st.mean(frame_diameters)
 
     
-    # Append the mean diameter to the list of diameters for all frames
-    pupil_diameters.append(mean_diameter)
+        # Append the mean diameter to the list of diameters for all frames
+        pupil_diameters.append(mean_diameter)
     
 # Now diameters contains the list of distances for each frame
-print(pupil_diameters)
+#print(pupil_diameters)
     
 #%% DEV SB: AVG DIAMETER USING THRESHOLDED_FRAMES
 
