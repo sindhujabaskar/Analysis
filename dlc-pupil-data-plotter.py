@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 DIRECTORY = (r'/Desktop/pupil_test-SB-2024-07-29/videos')
 DATA_PATH = (r'/Users/sindhubaskar/Desktop/pupil_test-SB-2024-07-29/videos/240701_sb7_grat_6_DLCDLC_Resnet50_pupil_testJul29shuffle2_snapshot_200_full.pickle')
-SAVE_CSV = (r'D:\Resources\DeepLabCut\Pupil\pupil_test-SB-2024-07-29\analysis')
+#SAVE_CSV = (r'D:\Resources\DeepLabCut\Pupil\pupil_test-SB-2024-07-29\analysis')
 
 
 #%% GET FILE LIST
@@ -33,10 +33,6 @@ def load_df_from_file(path=DATA_PATH):
     print('loading file...')
     new_df = pd.DataFrame(data = unpickled_data)
     return new_df
-
-#def coordinates_array(new_df: pd.DataFrame):
- #   """ return row 8 from all columns of a dataframe 'new_df' """
-  #  return new_df.iloc[8, :]
 
 def euclidean_distance(coord1, coord2):
     """ Calculate the Euclidean distance between two points """
@@ -83,7 +79,7 @@ print(frame_confidence_array)
 def confidence_filter_coordinates(frame_coordinates_array, frame_confidence_array, threshold):
     
     #Initialize an empty list to store the threshold-labeled list of coordinates
-    thresholded_frames = []
+    thresholded_frame_coordinates = []
     
     #Zip the coordinate and its confidence into a pair, skipping the first item in the list (null metadata)
     for coordinates, confidence in zip(frame_coordinates_array[1:], frame_confidence_array[1:]): 
@@ -111,89 +107,45 @@ def confidence_filter_coordinates(frame_coordinates_array, frame_confidence_arra
             frame_label.append(label)
             
         # Append the list of filtered coordinates with bool label
-        thresholded_frames.append([frame_coords, frame_conf, frame_label])
+        thresholded_frame_coordinates.append([frame_coords, frame_conf, frame_label])
                 
-    return thresholded_frames
+    return thresholded_frame_coordinates
 
 # Cast list of thresholded coordinates to a DataFrame
-thresholded_frames = confidence_filter_coordinates(frame_coordinates_array, frame_confidence_array, 0.90)
-
+labeled_frames = confidence_filter_coordinates(frame_coordinates_array, frame_confidence_array, 0.90)
+print(labeled_frames)
 
 #%% AVERAGE DIAMETER FOR EACH FRAME
 
 # Initialize an empty list to store the averaged diameter for each frame
 pupil_diameters = []
-
 # Iterate through each array of coordinates of each frame
-for frame in thresholded_frames: # skip the first item in the list (null metadata)
+for frame in labeled_frames: 
     # Initialize an empty list to store the diameters for the current frame
     frame_diameters = []
-    #  in the current frame Iterate through each pair of coordinates
+    
+    # In the current frame iterate through each pair of coordinates
     for i in range(0, 7, 2): # 0, 2, 4, 6 results in (x_1, y_1) paired with (x_2, y_2), (x_3, y_3) and (x_4, y_4), etc.
-        
-        # Calculate the Euclidean distance between the two coordinate points using our custom euclidean_distance function
+        # Calculate the Euclidean distance between each coordinate pair using our custom euclidean_distance function
         diameter = euclidean_distance(frame[0][i], frame[0][i+1])
         
+        # Set conditional that both coordinates must have True labels to be included in diameter calculation
         if frame[2][i] and frame[2][i+1]:
-            #print(frame[2][i], frame[2][i+1])
         # Append the calculated diameter to the list of diameters for the current frame
             frame_diameters.append(diameter)
-
+            
+    # Remove frame if less than one diameter is above threshold
     if len(frame_diameters) < 1:
-        print(frame)
+        print(frame)    
     else:
         # Calculate the mean diameter for the current frame
         mean_diameter = st.mean(frame_diameters)
 
-    
         # Append the mean diameter to the list of diameters for all frames
         pupil_diameters.append(mean_diameter)
     
 # Now diameters contains the list of distances for each frame
-#print(pupil_diameters)
-    
-#%% DEV SB: AVG DIAMETER USING THRESHOLDED_FRAMES
-
-# Initialize an empty list to store the averaged diameter for each frame
-pupil_diameters = []
-
-# Iterate through list of coordinates, confidence, and label of each frame
-for coordinates, confidence, include in thresholded_frames:
-    
-    # Initialize an empty list to store the diameters for the current frame
-    frame_diameters = []
-
-    #  in the current frame, iterate through each pair of coordinates
-    for i in range(0, 7, 2): # 0, 2, 4, 6 results in (x_1, y_1) paired with (x_2, y_2), (x_3, y_3) and (x_4, y_4), etc.
-        
-        for label in include:
-            if label[i] and label[i+1]:
-                 # Calculate the Euclidean distance between the two coordinate points using our custom euclidean_distance function
-                 diameter = euclidean_distance(coordinates[i], coordinates[i+1])
-                 
-             else:
-                 pass           
-    
-        if label[i] and label[i+1]:
-            
-            # Calculate the Euclidean distance between the two coordinate points using our custom euclidean_distance function
-            diameter = euclidean_distance(coordinates[i], coordinates[i+1])
-            
-      
-            
-        # Append the calculated diameter to the list of diameters for the current frame
-        frame_diameters.append(diameter)
-
-        # Calculate the mean diameter for the current frame
-        mean_diameter = st.mean(frame_diameters)
-
-    
-    # Append the mean diameter to the list of diameters for all frames
-    pupil_diameters.append(mean_diameter)
-    
-# Now diameters contains the list of distances for each frame
 print(pupil_diameters)
-
 
 #%% PLT PUPIL DIAMETERS
 
@@ -228,7 +180,7 @@ def plot_frame_coordinates(raw_dataframe: pd.DataFrame, frame_number: int):
 #%% TODO
 
 #TODO Linear interpolation or qubic spline interpolation
-#TODO Use confidence intervals to determine blinks
+#TODO Convert pupil diameter to mm 
 #TODO Integrate the timestamps for the frames
 #TODO Plot labeled coordinate points on a grid defined by the pixels of the video frames
 #TODO Use common interesection point as a means to calculate pupil movement
