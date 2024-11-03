@@ -74,7 +74,7 @@ print(frame_coordinates_array)
 print(frame_confidence_array)
 
 
-#%% FILTER COORDINATES BASED ON CONFIDENCE 
+#%% LABEL COORDINATES BASED ON CONFIDENCE 
 
 def confidence_filter_coordinates(frame_coordinates_array, frame_confidence_array, threshold):
     
@@ -126,28 +126,35 @@ for frame in labeled_frames:
     
     # In the current frame iterate through each pair of coordinates
     for i in range(0, 7, 2): # 0, 2, 4, 6 results in (x_1, y_1) paired with (x_2, y_2), (x_3, y_3) and (x_4, y_4), etc.
-        # Calculate the Euclidean distance between each coordinate pair using our custom euclidean_distance function
-        diameter = euclidean_distance(frame[0][i], frame[0][i+1])
-        
         # Set conditional that both coordinates must have True labels to be included in diameter calculation
         if frame[2][i] and frame[2][i+1]:
-        # Append the calculated diameter to the list of diameters for the current frame
+            # Calculate the Euclidean distance between each coordinate pair using our custom euclidean_distance function
+            diameter = euclidean_distance(frame[0][i], frame[0][i+1])
+           # Append the calculated diameter to the list of diameters for the current frame
             frame_diameters.append(diameter)
-            
+        
+
     # Remove frame if less than one diameter is above threshold
-    if len(frame_diameters) < 1:
-        print(frame)    
+    if len(frame_diameters) >= 2:
+        mean_diameter = st.mean(frame_diameters)
+        
     else:
         # Calculate the mean diameter for the current frame
-        mean_diameter = st.mean(frame_diameters)
+        mean_diameter = None
 
-        # Append the mean diameter to the list of diameters for all frames
-        pupil_diameters.append(mean_diameter)
+    # Append the mean diameter to the list of diameters for all frames
+    pupil_diameters.append(mean_diameter)
+    
+# Convert mean pupil diameter to Pandas Series
+pupil_diameters = pd.Series(pupil_diameters)
+    
+# Use Linear Interpolation to fill in mean diameter for excluded frames
+pupil_diameters.interpolate(method = 'linear')
     
 # Now diameters contains the list of distances for each frame
 print(pupil_diameters)
 
-#%% PLT PUPIL DIAMETERS
+#%% PLOT PUPIL DIAMETERS
 
 # Set the DPI for the plot
 plt.figure(dpi=300)
