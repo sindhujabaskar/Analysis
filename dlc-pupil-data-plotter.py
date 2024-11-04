@@ -133,13 +133,12 @@ for frame in labeled_frames:
            # Append the calculated diameter to the list of diameters for the current frame
             frame_diameters.append(diameter)
         
-
-    # Remove frame if less than one diameter is above threshold
-    if len(frame_diameters) >= 2:
+    # Calculate mean if current frame has more than one diameter
+    if len(frame_diameters) > 1:
         mean_diameter = st.mean(frame_diameters)
         
     else:
-        # Calculate the mean diameter for the current frame
+        # If frame has less than one diameter, mean diameter is appended with NaN value
         mean_diameter = None
 
     # Append the mean diameter to the list of diameters for all frames
@@ -147,12 +146,12 @@ for frame in labeled_frames:
     
 # Convert mean pupil diameter to Pandas Series
 pupil_diameters = pd.Series(pupil_diameters)
-    
 # Use Linear Interpolation to fill in mean diameter for excluded frames
-pupil_diameters.interpolate(method = 'linear')
+pupil_diameters.interpolate()
     
 # Now diameters contains the list of distances for each frame
 print(pupil_diameters)
+
 
 #%% PLOT PUPIL DIAMETERS
 
