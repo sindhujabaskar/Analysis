@@ -1,6 +1,14 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Oct  5 14:21:13 2024
+
+@author: Jake Gronemeyer
+"""
+
 #%%
 import pandas as pd
 
+#%%
 # Define the path to the CSV file
 path = r'E:\Areas\jgronemeyer\Camkii-gcamp8\gs18\ses-3\beh\sub-gs18_ses-03_20240910_192922.csv'
 
@@ -93,15 +101,17 @@ for start_time in df['stim_grating.started']:
 # Show the plot
 show(p)
 # %%
-thor_json_path = r'D:\sipelab\ses-1\func\thor_metadata.json'
-dhyana_json_path = r'D:\sipelab\ses-1\func\dhyana_metadata.json'
+thor_json_path = r'F:\test_006\default_protocol-sub-default_subject_ses-default_session_task-default_task_004\_frame_metadata.json'
+dhyana_json_path = r"F:\test_006\default_protocol-sub-default_subject_ses-default_session_task-default_task_005\_frame_metadata.json"
 
-df_json = pd.read_json(thor_json_path)
+df_json = pd.read_json(dhyana_json_path)
 
 # Display the first few rows of the DataFrame
 print(df_json.head())
 
 print(df_json.columns)
+
+plt.plot(range(len(df_json.T.index)),df_json.T['ElapsedTime-ms'].values)
 
 # %%
 
@@ -112,7 +122,7 @@ time = pd.to_datetime(df_json['Time'])
 # Create a new DataFrame for plotting
 time_df = pd.DataFrame({
     'Index': range(len(time_received)),
-    'TimeReceivedByCore': time_received,
+    #'TimeReceivedByCore': time_received,
     'Time': time
 })
 
