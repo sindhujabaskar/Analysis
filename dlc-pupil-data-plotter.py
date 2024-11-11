@@ -11,8 +11,8 @@ import matplotlib.pyplot as plt
 
 #%% SET FILE DIRECTORIES
 
-DIRECTORY = (r'/Desktop/pupil_test-SB-2024-07-29/videos')
-DATA_PATH = (r'/Users/sindhubaskar/Desktop/pupil_test-SB-2024-07-29/videos/240701_sb7_grat_6_DLCDLC_Resnet50_pupil_testJul29shuffle2_snapshot_200_full.pickle')
+DIRECTORY = (r'/Volumes/Sinbas_Stuf/Resources/DeepLabCut/Pupil/Pupil_Diameter-SB-2024-11-06/videos')
+DATA_PATH = (r'//Volumes/Sinbas_Stuf/Resources/DeepLabCut/Pupil/Pupil_Diameter-SB-2024-11-06/videos/sub-SB03_ses-01_20240807_133242DLC_Resnet50_Pupil_DiameterNov6shuffle1_snapshot_200_full.pickle')
 #SAVE_CSV = (r'D:\Resources\DeepLabCut\Pupil\pupil_test-SB-2024-07-29\analysis')
 
 
@@ -111,8 +111,10 @@ def confidence_filter_coordinates(frame_coordinates_array, frame_confidence_arra
                 
     return thresholded_frame_coordinates
 
+threshold = 0.1
+
 # Cast list of thresholded coordinates to a DataFrame
-labeled_frames = confidence_filter_coordinates(frame_coordinates_array, frame_confidence_array, 0.90)
+labeled_frames = confidence_filter_coordinates(frame_coordinates_array, frame_confidence_array, threshold)
 print(labeled_frames)
 
 #%% AVERAGE DIAMETER FOR EACH FRAME
