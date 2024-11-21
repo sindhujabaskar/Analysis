@@ -5,13 +5,13 @@ import pandas as pd
 import numpy as np
 import math
 import statistics as st
-import pathlib
+from pathlib import Path
 import matplotlib.pyplot as plt
 
 
 #%% SET FILE DIRECTORIES
 
-DIRECTORY = (r'/Volumes/Sinbas_Stuf/Resources/DeepLabCut/Pupil/Pupil_Diameter-SB-2024-11-06/videos')
+pathlist = Path(r'/Volumes/Sinbas_Stuf/Resources/DeepLabCut/Pupil/Pupil_Diameter-SB-2024-11-06/videos').glob('*full.pickle')
 DATA_PATH = (r'//Volumes/Sinbas_Stuf/Resources/DeepLabCut/Pupil/Pupil_Diameter-SB-2024-11-06/videos/sub-SB03_ses-01_20240807_133242DLC_Resnet50_Pupil_DiameterNov6shuffle1_snapshot_200_full.pickle')
 #SAVE_CSV = (r'D:\Resources\DeepLabCut\Pupil\pupil_test-SB-2024-07-29\analysis')
 
@@ -21,8 +21,9 @@ DATA_PATH = (r'//Volumes/Sinbas_Stuf/Resources/DeepLabCut/Pupil/Pupil_Diameter-S
 # 241022 Note- this does not currently list all full.pickle files SB
 
 data_file_list = []
-for file in pathlib.Path(DIRECTORY).glob('*full.pickle'):
-    data_file_list.append(file)
+for file in pathlist:
+    file_path = str(file)
+    data_file_list.append(file_path)
 
 
 #%% LOAD FUNCTIONS
