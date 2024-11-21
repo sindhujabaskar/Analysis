@@ -22,7 +22,6 @@ for path in pathlist:
 
 print(file_list)
 
-#%%
 for file in file_list:
     roi_fluorescence = np.load(file_list[0], allow_pickle = True) # ALL ROI FLUORESCENCE
     neuropil_fluorescence = np.load(file_list[1], allow_pickle = True) # NEUROPIL FLUORESCENCE 
@@ -31,17 +30,32 @@ for file in file_list:
     roi_traces = np.load(file_list[4], allow_pickle = True) # DECONVOLVED TRACES
     roi_statistics = np.load(file_list[5], allow_pickle = True) #STATISTICS PER ROI
 
-print(cell_identifier)
+print(roi_fluorescence)
 
 #%%
 # FILTER ROIs (CELLS ONLY)
 
-# assign bool T/F 
+# assign bool T/F based on confidence index
 true_cells_only = cell_identifier[:,0].astype(bool)
 print(true_cells_only)
 
-
-
+# filter ROIs and neuropil based on bool value
+filtered_roi = roi_fluorescence[true_cells_only]
+filtered_neuropil = neuropil_fluorescence[true_cells_only]
 
 #%%
-# 
+# NEUROPIL SUBTRACTION
+
+neuropil_subtracted_roi = (filtered_roi - filtered_neuropil)
+
+#%%
+# plot individal ROI
+
+import matplotlib.pyplot as plt
+
+roi_number = neuropil_subtracted_roi[3,:]
+
+plt.plot(range(len(roi_number)), roi_number)
+plt.show()
+
+# %%
