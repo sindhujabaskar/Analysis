@@ -1,17 +1,14 @@
-#%%
-# GET LIBRARIES
+#%% GET LIBRARIES
 import numpy as np
 import pandas as pd
 from pathlib import Path
 
-#%%
-# SET DIRECTORY
+#%% SET DIRECTORY PATH
 pathlist = Path(r'/Volumes/Sinbas_Stuf/Projects/SU24_F31/raw/sub-03/baseline-SB03/suite2p/plane0').glob('*.npy')
 
-#%%
-# LOAD ALL SUITE2P OUTPUTS 
+#%% LOAD ALL SUITE2P OUTPUTS WITHIN DIRECTORY
 
-file_list= [] # initiate empty list
+file_list = [] # initiate empty list
 for path in pathlist:  
     print(f'this is the current path {path}')
     file_path = str(path)
@@ -32,30 +29,65 @@ for file in file_list:
 
 print(roi_fluorescence)
 
-#%%
-# FILTER ROIs (CELLS ONLY)
+#%% FILTER ROIs (CELLS ONLY)
 
 # assign bool T/F based on confidence index
 true_cells_only = cell_identifier[:,0].astype(bool)
 print(true_cells_only)
 
 # filter ROIs and neuropil based on bool value
-filtered_roi = roi_fluorescence[true_cells_only]
-filtered_neuropil = neuropil_fluorescence[true_cells_only]
+filtered_roi = np.array(roi_fluorescence[true_cells_only])
+filtered_neuropil = np.array(neuropil_fluorescence[true_cells_only])
 
-#%%
-# NEUROPIL SUBTRACTION
+#
+num_roi = len(filtered_roi)
+
+#%% NEUROPIL SUBTRACTION
 
 neuropil_subtracted_roi = (filtered_roi - filtered_neuropil)
 
-#%%
-# plot individal ROI
+#%% PLOT ROIS
 
 import matplotlib.pyplot as plt
 
 roi_number = neuropil_subtracted_roi[3,:]
+avg_fluorescence = np.mean
 
 plt.plot(range(len(roi_number)), roi_number)
 plt.show()
 
+#%% CALCULATE DF/F
+
+# i have an ndarray containing the fluorescence values of the neuropil subtracted rois
+# i want to populate another array or a list with fluorescence values emcompassing a baseline percentile
+# i want to then use the percentile array as my "baseline fluorescence" aka F0
+# then i must perform a (f-f0)/(f0) calculation for each ROI, at each frame to get a dff output 
+# I want to then plot an overlay of before and after percentile normalization of ROI fluorescence 
+
+# initiate empty list
+percentile_list = []
+fluorescence_percentile = 5 # set percentile value for calculating baseline fluorescence (f0)
+for row in neuropil_subtracted_roi[:,:]:
+    percentile = np.percentile(row, fluorescence_percentile)
+    percentile_list.append(np.abs(percentile))
+baseline_fluorescence = np.array(percentile_list)
+
+print(baseline_fluorescence)
+
+#%%
+dff_roi = []
+for row in neuropil_subtracted_roi:
+    dff = ((neuropil_subtracted_roi.T) - (baseline_fluorescence))/ (baseline_fluorescence)
+    dff_roi.append(dff)
+
+print(dff_roi[3])
+
+
+# %% PLOTTING DFF 
+import matplotlib.pyplot as plt
+
+roi_number = dff_roi[3]
+
+plt.plot(range(len(roi_number)), roi_number)
+plt.show()
 # %%
