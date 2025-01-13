@@ -1,4 +1,4 @@
-# purpose: unpickling dlc output for pupil analysis 
+# purpose: DeepLabCut output analysis for pupil diameter 
 #%% GET LIBRARIES
 
 import pandas as pd
@@ -25,7 +25,6 @@ for file in pathlist:
     file_path = str(file)
     data_file_list.append(file_path)
 
-
 #%% LOAD FUNCTIONS
 
 def load_df_from_file(path=DATA_PATH):
@@ -40,7 +39,6 @@ def euclidean_distance(coord1, coord2):
     return math.dist(coord1, coord2)
 
 #%% LOAD DATA
-# Note, this script will look for the ['coordinates'] row in the DataFrame
 
 raw_dataframe = load_df_from_file(DATA_PATH) # new_df = whatever load_df_from_file 'returns'
 print(raw_dataframe)
@@ -119,7 +117,7 @@ labeled_frames = confidence_filter_coordinates(frame_coordinates_array, frame_co
 print(labeled_frames)
 
 #%% AVERAGE DIAMETER FOR EACH FRAME
-
+## TODO: This needs to be a function
 # Initialize an empty list to store the averaged diameter for each frame
 pupil_diameters = []
 # Iterate through each array of coordinates of each frame
@@ -155,6 +153,11 @@ pupil_diameters.interpolate()
 # Now diameters contains the list of distances for each frame
 print(pupil_diameters)
 
+#%% CONVERT PUPIL DIAMETERS TO MM
+#1mm is 53.6 pixels; use this conversion factor for converting pixels to mm
+for i in range(len(pupil_diameters)):
+    pupil_diameters[i] = pupil_diameters[i] / 53.6
+print(pupil_diameters)
 
 #%% PLOT PUPIL DIAMETERS
 
@@ -165,7 +168,7 @@ color = 'blue'  # You can change this to any color you like
 # Plot the pupil diameters with the specified color
 plt.plot(pupil_diameters, color=color)
 plt.xlabel('Frame')
-plt.ylabel('Diameter')
+plt.ylabel('Diameter (mm)')
 plt.show()
 #%% PLOT INDIVIDUAL FRAME COORDINATES
 
