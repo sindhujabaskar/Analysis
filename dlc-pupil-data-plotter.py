@@ -192,7 +192,6 @@ def plot_frame_coordinates(raw_dataframe: pd.DataFrame, frame_number: int):
 #%% TODO
 
 #TODO Linear interpolation or qubic spline interpolation
-#TODO Convert pupil diameter to mm 
 #TODO Integrate the timestamps for the frames
 #TODO Plot labeled coordinate points on a grid defined by the pixels of the video frames
 #TODO Use common interesection point as a means to calculate pupil movement
