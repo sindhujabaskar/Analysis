@@ -25,7 +25,7 @@ def load_suite2p_outputs(directory_path):
     return loaded_data_files
 
 # %% LOAD DATA
-suite2p_data_output = load_suite2p_outputs(r'/Volumes/Sinbas_Stuf/Projects/SU24_F31/raw/sub-03/baseline-SB03/suite2p/plane0')
+suite2p_data_output = load_suite2p_outputs(r'/Volumes/Sinbas_Stuf/Projects/SU24_F31/raw/sub-03/high-SB03/suite2p/plane0')
     
 # %% FILTER ROIs (CELLS ONLY)
 
@@ -38,8 +38,8 @@ filtered_roi = np.array(suite2p_data_output['roi_fluorescence'][true_cells_only]
 filtered_neuropil = np.array(suite2p_data_output['neuropil_fluorescence'][true_cells_only])
 
 # %% NEUROPIL SUBTRACTION
-neuropil_subtracted_roi = (filtered_roi - filtered_neuropil)
-
+#neuropil_subtracted_roi = (filtered_roi - (0.7 * filtered_neuropil))
+neuropil_subtracted_roi = filtered_roi
 #%% PLOT ROIS
 plt.plot(neuropil_subtracted_roi[2])
 plt.title('Raw Fluorescence of ROI')
@@ -61,13 +61,21 @@ baseline_fluorescence = np.array(percentile_list)
 
 # %% CALCULATE DF/F
 ## TODO: THIS NEEDS TO BE A FUNCTION
-for row in neuropil_subtracted_roi:
-    dff = ((row) - (baseline_fluorescence))/ (baseline_fluorescence)
+
+roi_dff = []
+print (neuropil_subtracted_roi.shape[0])
+#for row in range(neuropil_subtracted_roi.shape[0]):
+for row in range(300):
+    foo=neuropil_subtracted_roi[row]
+    foo2=(baseline_fluorescence[row])
+    print(foo2)
+    dff = ((foo) - (baseline_fluorescence[row]))/ (baseline_fluorescence[row])
+    roi_dff.append(dff)
 
 # %% PLOTTING DFF 
 import matplotlib.pyplot as plt
 
-plt.plot(dff[71])
+plt.plot(roi_dff[10])
 plt.title('Neuronal Ca2+ activity across session')
 plt.xlabel('Frames')
 plt.ylabel('df/f')
@@ -90,7 +98,7 @@ simulated_vis_stim = generate_vis_stim_vector(40, 6000, 2, 3)
 
 
 # %% 
-plt.plot(neuropil_subtracted_roi[71][:500])
+plt.plot(neuropil_subtracted_roi[2][:500])
 plt.plot(simulated_vis_stim[:500])
 plt.show()
 # %%
