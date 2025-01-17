@@ -6,40 +6,53 @@ import matplotlib.pyplot as plt
 
 # %% DEFINE FUNCTIONS
 
-def load_suite2p_outputs(directory_path):
+def load_suite2p_outputs(directory_path): # this will load all Suite2p output files from the specified directory
     file_dict = {
         'roi_fluorescence': '*F.npy',
         'neuropil_fluorescence': '*Fneu.npy',
         'cell_identifier' : '*iscell.npy',
         'intermediate_outputs' : '*ops.npy',
         'roi_traces' : '*spks.npy',
-        'roi_statistics' : '*stat.npy'
-    }
+        'roi_statistics' : '*stat.npy'}
     loaded_data_files = {}
     pathlist = Path(directory_path)
-
     for key, value in file_dict.items():
         suite2p_files = list(pathlist.glob(value))
         for file in suite2p_files:
             loaded_data_files[key] = np.load(file, allow_pickle = True)
     return loaded_data_files
 
+def calculate_dff(raw, baseline): # this will calculate the dff values for each roi
+    dff_list = []
+    for row in range(len(raw)):
+        dff = ((raw[row] - baseline[row])/(baseline[row]))
+        dff_list.append(dff)
+    return dff_list
+
+def calculate_baseline(raw_fluorescence, percentile): # this will calculate the specified percentile along each roi's raw fluorescence
+    percentile_list = []
+    for row in raw_fluorescence:
+        find_percentile = np.percentile(row, percentile, keepdims = True)
+        percentile_list.append(find_percentile)
+    return percentile_list
+
 # %% LOAD DATA
-suite2p_data_output = load_suite2p_outputs(r'/Volumes/Sinbas_Stuf/Projects/SU24_F31/raw/sub-03/high-SB03/suite2p/plane0')
+suite2p_data_output = load_suite2p_outputs(r'C:\dev\2p-analysis\suite2p\SB03\tiff\sb03_high\suite2p\plane0')
     
 # %% FILTER ROIs (CELLS ONLY)
 
 # assign bool T/F based on confidence index
 true_cells_only = suite2p_data_output['cell_identifier'][:,0].astype(bool)
-print(true_cells_only)
+# print(true_cells_only)
 
 # filter ROIs and neuropil based on bool value
 filtered_roi = np.array(suite2p_data_output['roi_fluorescence'][true_cells_only])
 filtered_neuropil = np.array(suite2p_data_output['neuropil_fluorescence'][true_cells_only])
 
 # %% NEUROPIL SUBTRACTION
-#neuropil_subtracted_roi = (filtered_roi - (0.7 * filtered_neuropil))
-neuropil_subtracted_roi = filtered_roi
+
+neuropil_subtracted_roi = (filtered_roi - (0.7 * filtered_neuropil))
+
 #%% PLOT ROIS
 plt.plot(neuropil_subtracted_roi[2])
 plt.title('Raw Fluorescence of ROI')
@@ -48,34 +61,17 @@ plt.ylabel('raw fluorescence')
 plt.show()
 
 # %% CALCULATE BASELINE FLUORESCENCE
-# initiate empty list
-percentile_list = []
-fluorescence_percentile = 10 # set percentile value for calculating baseline fluorescence (f0)
-## TODO: THIS NEEDS TO BE A FUNCTION
-for row in neuropil_subtracted_roi:
-    percentile = np.percentile(row, fluorescence_percentile, keepdims= True)
-    percentile_list.append(percentile)
-baseline_fluorescence = np.array(percentile_list)
-
+baseline_fluorescence = calculate_baseline(neuropil_subtracted_roi, percentile = 10)
 #print(baseline_fluorescence)
 
 # %% CALCULATE DF/F
-## TODO: THIS NEEDS TO BE A FUNCTION
-
-roi_dff = []
-print (neuropil_subtracted_roi.shape[0])
-#for row in range(neuropil_subtracted_roi.shape[0]):
-for row in range(300):
-    foo=neuropil_subtracted_roi[row]
-    foo2=(baseline_fluorescence[row])
-    print(foo2)
-    dff = ((foo) - (baseline_fluorescence[row]))/ (baseline_fluorescence[row])
-    roi_dff.append(dff)
+roi_dff = calculate_dff(neuropil_subtracted_roi, baseline_fluorescence)
+# print(roi_dff)
 
 # %% PLOTTING DFF 
 import matplotlib.pyplot as plt
 
-plt.plot(roi_dff[10])
+plt.plot(roi_dff[2])
 plt.title('Neuronal Ca2+ activity across session')
 plt.xlabel('Frames')
 plt.ylabel('df/f')
@@ -93,9 +89,10 @@ def generate_vis_stim_vector(frame_rate, total_frames, stim_duration, gray_durat
 simulated_vis_stim = generate_vis_stim_vector(40, 6000, 2, 3)
 # print(simulated_vis_stim[:50])
 
-# %% STIM FRAMES ONLY
-
-
+#%% IMPORT VIS STIM TIMESTAMPS 
+# LABEL BY VIS STIM YES/NO
+# YES FRAMES IN ONE ARRAY, NO FRAMES IN ANOTHER
+# AVG ACROSS THE ARRAYS, AND SEE HOW ACTIVITY IS DIFFERENT DURING VIS STIM AND OUTSIDE
 
 # %% 
 plt.plot(neuropil_subtracted_roi[2][:500])
