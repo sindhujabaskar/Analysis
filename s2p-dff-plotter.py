@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 import matplotlib.pyplot as plt
+import csv
 
 # %% DEFINE FUNCTIONS
 
@@ -51,7 +52,7 @@ filtered_neuropil = np.array(suite2p_data_output['neuropil_fluorescence'][true_c
 
 # %% NEUROPIL SUBTRACTION
 
-neuropil_subtracted_roi = (filtered_roi - (0.7 * filtered_neuropil))
+neuropil_subtracted_roi = (filtered_roi - (filtered_neuropil))
 
 #%% PLOT ROIS
 plt.plot(neuropil_subtracted_roi[2])
@@ -61,7 +62,7 @@ plt.ylabel('raw fluorescence')
 plt.show()
 
 # %% CALCULATE BASELINE FLUORESCENCE
-baseline_fluorescence = calculate_baseline(neuropil_subtracted_roi, percentile = 10)
+baseline_fluorescence = calculate_baseline(filtered_roi, percentile = 10)
 #print(baseline_fluorescence)
 
 # %% CALCULATE DF/F
@@ -79,14 +80,14 @@ plt.show()
 
 # %% CREATE VIS STIM SIMULATED VECTOR
 
-def generate_vis_stim_vector(frame_rate, total_frames, stim_duration, gray_duration): #frames per second, total number of frames in session, grat duration (s), gray duration(s))
-    gray_frames = int(gray_duration * frame_rate) # gray frames in a single trial
-    stim_frames = int(stim_duration * frame_rate) # vis stim frames in a single trial
-    vis_trial_timestamps = np.hstack([ np.zeros(gray_frames),np.ones(stim_frames)]) # fills array with 1 for stim frame, 0 for gray
-    vis_session_timestamps = np.resize (vis_trial_timestamps, total_frames) # 
-    return vis_session_timestamps
+# def generate_vis_stim_vector(frame_rate, total_frames, stim_duration, gray_duration): #frames per second, total number of frames in session, grat duration (s), gray duration(s))
+#     gray_frames = int(gray_duration * frame_rate) # gray frames in a single trial
+#     stim_frames = int(stim_duration * frame_rate) # vis stim frames in a single trial
+#     vis_trial_timestamps = np.hstack([ np.zeros(gray_frames),np.ones(stim_frames)]) # fills array with 1 for stim frame, 0 for gray
+#     vis_session_timestamps = np.resize (vis_trial_timestamps, total_frames) # 
+#     return vis_session_timestamps
 
-simulated_vis_stim = generate_vis_stim_vector(40, 6000, 2, 3)
+# simulated_vis_stim = generate_vis_stim_vector(40, 6000, 2, 3)
 # print(simulated_vis_stim[:50])
 
 #%% IMPORT VIS STIM TIMESTAMPS 
@@ -94,8 +95,9 @@ simulated_vis_stim = generate_vis_stim_vector(40, 6000, 2, 3)
 # YES FRAMES IN ONE ARRAY, NO FRAMES IN ANOTHER
 # AVG ACROSS THE ARRAYS, AND SEE HOW ACTIVITY IS DIFFERENT DURING VIS STIM AND OUTSIDE
 
-# %% 
-plt.plot(neuropil_subtracted_roi[2][:500])
-plt.plot(simulated_vis_stim[:500])
-plt.show()
+# with open('file', 'r'
+# # %% 
+# plt.plot(neuropil_subtracted_roi[2][:500])
+# plt.plot(simulated_vis_stim[:500])
+# plt.show()
 # %%
