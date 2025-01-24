@@ -38,7 +38,7 @@ def calculate_baseline(raw_fluorescence, percentile): # this will calculate the 
     return percentile_list
 
 # %% LOAD DATA
-suite2p_data_output = load_suite2p_outputs(r'C:\dev\2p-analysis\suite2p\SB03\tiff\sb03_high\suite2p\plane0')
+suite2p_data_output = load_suite2p_outputs(r'C:\dev\2p-analysis\suite2p\SB03\tiff\sb03_baseline\suite2p\plane0')
     
 # %% FILTER ROIs (CELLS ONLY)
 
@@ -52,52 +52,82 @@ filtered_neuropil = np.array(suite2p_data_output['neuropil_fluorescence'][true_c
 
 # %% NEUROPIL SUBTRACTION
 
-neuropil_subtracted_roi = (filtered_roi - (filtered_neuropil))
+neuropil_subtracted_roi = (filtered_roi - (filtered_neuropil)) #TODO: necessary?
 
 #%% PLOT ROIS
-plt.plot(neuropil_subtracted_roi[2])
-plt.title('Raw Fluorescence of ROI')
-plt.xlabel('frames')
-plt.ylabel('raw fluorescence')
-plt.show()
+# plt.plot(neuropil_subtracted_roi[2])
+# plt.title('Raw Fluorescence of ROI')
+# plt.xlabel('frames')
+# plt.ylabel('raw fluorescence')
+# plt.show()
 
 # %% CALCULATE BASELINE FLUORESCENCE
 baseline_fluorescence = calculate_baseline(filtered_roi, percentile = 10)
 #print(baseline_fluorescence)
 
 # %% CALCULATE DF/F
-roi_dff = calculate_dff(neuropil_subtracted_roi, baseline_fluorescence)
+roi_dff = calculate_dff(filtered_roi, baseline_fluorescence)
 # print(roi_dff)
 
 # %% PLOTTING DFF 
-import matplotlib.pyplot as plt
+# plt.plot(roi_dff[2])
+# plt.title('Neuronal Ca2+ activity across session')
+# plt.xlabel('Frames')
+# plt.ylabel('df/f')
+# plt.show()
 
-plt.plot(roi_dff[2])
-plt.title('Neuronal Ca2+ activity across session')
-plt.xlabel('Frames')
-plt.ylabel('df/f')
+# %% EXPORT TO CSV
+
+# def export_dff_to_csv(dff_data, output_path):
+#     # Convert the list of ΔF/F arrays into a DataFrame
+#     dff_df = pd.DataFrame(dff_data).transpose()
+    
+#     # Rename columns to indicate ROI numbers
+#     dff_df.columns = [f"ROI_{i}" for i in range(len(dff_data))]
+    
+#     # Export to CSV
+#     dff_df.to_csv(output_path, index=False)
+#     print(f"ΔF/F data successfully exported to {output_path}")
+# # %%
+# # Specify the output file path
+# output_csv_path = r'C:\dev\2p-analysis\suite2p\SB03\tiff\sb03_baseline\suite2p\plane0\roi_dff_data.csv'
+
+# # Export the ΔF/F data
+# export_dff_to_csv(roi_dff, output_csv_path)
+
+# %% CALCULATE AVERAGE DFF
+def calculate_average_roi(dff_data):
+    """
+    Calculate the average ΔF/F across all ROIs at each timepoint and export to CSV.
+
+    Parameters:
+    dff_data (list of numpy arrays): A list where each element is a numpy array of ΔF/F values for an ROI.
+    output_path (str): The file path where the average data will be saved.
+    """
+    # Convert the list of ΔF/F arrays into a DataFrame
+    dff_df = pd.DataFrame(dff_data).transpose()
+    
+    # Calculate the mean across all ROIs for each timepoint
+    average_df = pd.DataFrame(dff_df.mean(axis=1), columns=["Average_ROI"])
+
+    return average_df
+
+# Calculate the average ΔF/F values
+average_df = calculate_average_roi(roi_dff)
+
+# Export the average values to a CSV
+average_output_csv_path = r'C:\dev\2p-analysis\suite2p\SB03_analysis\sb03_baseline_average_roi_dff_data.csv'
+average_df.to_csv(average_output_csv_path, index=False)
+print(f"Average ROI ΔF/F data successfully exported to {average_output_csv_path}")
+
+# Plot the average ΔF/F values
+plt.figure(figsize=(10, 5))
+plt.plot(average_df)
+plt.suptitle('SB03-BASELINE')
+plt.title("Average ΔF/F Across All ROIs")
+plt.xlabel("Time (Frames)")
+plt.ylabel("Average ΔF/F")
+plt.grid()
 plt.show()
 
-# %% CREATE VIS STIM SIMULATED VECTOR
-
-# def generate_vis_stim_vector(frame_rate, total_frames, stim_duration, gray_duration): #frames per second, total number of frames in session, grat duration (s), gray duration(s))
-#     gray_frames = int(gray_duration * frame_rate) # gray frames in a single trial
-#     stim_frames = int(stim_duration * frame_rate) # vis stim frames in a single trial
-#     vis_trial_timestamps = np.hstack([ np.zeros(gray_frames),np.ones(stim_frames)]) # fills array with 1 for stim frame, 0 for gray
-#     vis_session_timestamps = np.resize (vis_trial_timestamps, total_frames) # 
-#     return vis_session_timestamps
-
-# simulated_vis_stim = generate_vis_stim_vector(40, 6000, 2, 3)
-# print(simulated_vis_stim[:50])
-
-#%% IMPORT VIS STIM TIMESTAMPS 
-# LABEL BY VIS STIM YES/NO
-# YES FRAMES IN ONE ARRAY, NO FRAMES IN ANOTHER
-# AVG ACROSS THE ARRAYS, AND SEE HOW ACTIVITY IS DIFFERENT DURING VIS STIM AND OUTSIDE
-
-# with open('file', 'r'
-# # %% 
-# plt.plot(neuropil_subtracted_roi[2][:500])
-# plt.plot(simulated_vis_stim[:500])
-# plt.show()
 # %%
