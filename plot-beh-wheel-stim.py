@@ -72,7 +72,7 @@ def plot_data(wheel_df: pd.DataFrame, stim_df: pd.DataFrame, roi_df: pd.DataFram
     plt.suptitle('SB03-SALINE')
 
     # Plot 'ROI fluorescence' over time
-    plt.subplot(4, 1, 1)
+    plt.subplot(2, 1, 1)
     plt.plot(roi_df)
     plt.title('ROI Fluorescence (ΔF/F)')
     plt.xlabel('Time (Frames)')
@@ -82,39 +82,38 @@ def plot_data(wheel_df: pd.DataFrame, stim_df: pd.DataFrame, roi_df: pd.DataFram
     # for start_time in stim_df['stim_grating.started']:
     #     plt.axvline(x=start_time, color='green', linestyle='--', label='stim_grating.started')
     
-
     # Plot 'speed' over time
-    plt.subplot(4, 1, 2)
-    plt.plot(wheel_df['timestamp'], wheel_df['speed'])
+    plt.subplot(2, 1, 2)
+    plt.plot(wheel_df['timestamp'], (-1* wheel_df['speed']))
     plt.title('Speed')
     plt.xlabel('Time (secs)')
     plt.ylabel('Speed')
-    for start_time in stim_df['stim_grayScreen.started']:
-        plt.axvline(x=start_time, color='red', linestyle='--', label='stim_grayScreen.started')
-    for start_time in stim_df['stim_grating.started']:
-        plt.axvline(x=start_time, color='green', linestyle='--', label='stim_grating.started')
+    # for start_time in stim_df['stim_grayScreen.started']:
+    #     plt.axvline(x=start_time, color='red', linestyle='--', label='stim_grayScreen.started')
+    # for start_time in stim_df['stim_grating.started']:
+    #     plt.axvline(x=start_time, color='green', linestyle='--', label='stim_grating.started')
 
     # Plot 'distance' over time
-    plt.subplot(4, 1, 3)
-    plt.plot(wheel_df['timestamp'], wheel_df['distance'])
-    plt.title('Distance')
-    plt.xlabel('Time (secs)')
-    plt.ylabel('Distance')
-    for start_time in stim_df['stim_grayScreen.started']:
-        plt.axvline(x=start_time, color='red', linestyle='--', label='stim_grayScreen.started')
-    for start_time in stim_df['stim_grating.started']:
-        plt.axvline(x=start_time, color='green', linestyle='--', label='stim_grating.started')
+    # plt.subplot(4, 1, 3)
+    # plt.plot(wheel_df['timestamp'], wheel_df['distance'])
+    # plt.title('Distance')
+    # plt.xlabel('Time (secs)')
+    # plt.ylabel('Distance')
+    # for start_time in stim_df['stim_grayScreen.started']:
+    #     plt.axvline(x=start_time, color='red', linestyle='--', label='stim_grayScreen.started')
+    # for start_time in stim_df['stim_grating.started']:
+    #     plt.axvline(x=start_time, color='green', linestyle='--', label='stim_grating.started')
 
     # Plot 'direction' over time
-    plt.subplot(4, 1, 4)
-    plt.plot(wheel_df['timestamp'], wheel_df['direction'])
-    plt.title('Direction')
-    plt.xlabel('Time (secs)')
-    plt.ylabel('Direction')
-    for start_time in stim_df['stim_grayScreen.started']:
-        plt.axvline(x=start_time, color='red', linestyle='--', label='stim_grayScreen.started')
-    for start_time in stim_df['stim_grating.started']:
-        plt.axvline(x=start_time, color='green', linestyle='--', label='stim_grating.started')
+    # plt.subplot(4, 1, 4)
+    # plt.plot(wheel_df['timestamp'], wheel_df['direction'])
+    # plt.title('Direction')
+    # plt.xlabel('Time (secs)')
+    # plt.ylabel('Direction')
+    # for start_time in stim_df['stim_grayScreen.started']:
+    #     plt.axvline(x=start_time, color='red', linestyle='--', label='stim_grayScreen.started')
+    # for start_time in stim_df['stim_grating.started']:
+    #     plt.axvline(x=start_time, color='green', linestyle='--', label='stim_grating.started')
 
     # Adjust the layout
     plt.tight_layout()
