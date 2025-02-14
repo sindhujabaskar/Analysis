@@ -1,2 +1,2 @@
 # Analysis
- Scripts for processesing Sipe Lab data
+ Scripts for processing Sipe Lab data
