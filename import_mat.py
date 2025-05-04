@@ -57,7 +57,7 @@ def main():
     shaped_movies = set_mov_shape(all_movies)
 
     save_to_tiff(shaped_movies, output_dir= r'C:\2P\Experiment Types\Natural Movies Experiment', base_filename='mov', metadata = {'axes': 'ZYX'})
-#BUG- renames mov# after converting instead of maintaining originial mov number
+#BUG- renumbers mov# after converting instead of maintaining originial mov number
 
 if __name__ == "__main__": 
     main()
@@ -65,18 +65,34 @@ if __name__ == "__main__":
 
 
 
-#%%
+#%% 
+"""
+SINDHU BABY MADE THIS SO COOL
+For converting a single .mat video file into a .tiff
+
+Parameters
+----------
+path  :  str
+File path for .mat file
+
+Returns
+-------
+TIFF  
+uint8 re-shaped .tiff file in save_dir that can be opened in imagej for easy viewing :)
+"""
+# load .mat file
 mat_file = scipy.io.loadmat(r"C:\Users\Sipe_Lab\Documents\scripts\astrostim\visual\movies\movies\mov1.mat")
 print(mat_file)
-print(mat_file.keys())  # Print keys to understand the structure of the .mat file
+print(mat_file.keys())  # Print keys to see where the image array is 
 
-# Extract the data from the dict
-data = mat_file['movnew']
-data_array = np.transpose(data, (2, 0, 1))  # Reorder to (T, Y, X) 
+data = mat_file['movnew'] # Extract the data from the dict
+data_array = np.transpose(data, (2, 0, 1))  # Reorder to (Z, Y, X) 
 print(f'reshaped:',{data_array.shape})  # Print the shape of the array to verify dimensions
 
-data_array = data_array.astype(np.uint8)
+data_array = data_array.astype(np.uint8) # cast as uint8 which is the original datatype as failsafe in case datatype changes somehow
 
 # Save as a .tiff file, specifying axes as imageJ hyperstacks must be in TZCYXS order
 tifffile.imwrite(r'C:\2P\Experiment Types\Natural Movies Experiment\mov1.tiff', data_array, metadata = {'axes':'ZYX'}, imagej=True) 
 
+
+# %%
